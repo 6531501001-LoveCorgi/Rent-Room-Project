@@ -134,6 +134,9 @@ class _MyWidgetState extends State<LoginPage> {
                   children: [
                     TextField(
                       controller: _emailController,
+                      style: TextStyle(
+                        fontFamily: 'LilitaOne',
+                      ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         filled: true,
@@ -156,6 +159,9 @@ class _MyWidgetState extends State<LoginPage> {
                     TextField(
                       controller: _passwordController,
                       obscureText: !_passwordVisible,
+                       style: TextStyle(
+                        fontFamily: 'LilitaOne',
+                      ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         filled: true,

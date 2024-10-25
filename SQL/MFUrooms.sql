@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 23, 2024 at 06:54 PM
+-- Generation Time: Oct 25, 2024 at 05:40 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -43,49 +43,44 @@ INSERT INTO `Building` (`ID`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `History`
+-- Table structure for table `historys`
 --
 
-CREATE TABLE `History` (
+CREATE TABLE `historys` (
   `id` int(11) NOT NULL,
-  `roomID` int(11) DEFAULT NULL,
-  `requestBy` int(11) DEFAULT NULL,
-  `borrow_date` date DEFAULT NULL,
-  `return_date` date DEFAULT NULL,
-  `approver` int(11) DEFAULT NULL,
-  `lender` int(11) DEFAULT NULL,
-  `approveStatus` tinyint(4) DEFAULT NULL COMMENT 'Null = pending, 0 = rejected, 1 = approved',
-  `borrowStatus` tinyint(4) DEFAULT NULL COMMENT 'Null = rejected ,0 = not borrowed yet, 1 = not returned, 2 = returned'
+  `requestID` int(11) NOT NULL,
+  `approver` int(11) NOT NULL,
+  `lender` int(11) NOT NULL,
+  `borrow_status` enum('0','1') DEFAULT NULL COMMENT 'Null = not borrowed yet, 0 = borrowing, 1 = returned'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `History`
+-- Dumping data for table `historys`
 --
 
-INSERT INTO `History` (`id`, `roomID`, `requestBy`, `borrow_date`, `return_date`, `approver`, `lender`, `approveStatus`, `borrowStatus`) VALUES
-(1, 1, 1, '2024-10-01', '2024-10-05', 2, 3, 1, 2),
-(2, 2, 2, '2024-10-02', '2024-10-06', 1, 3, 0, 1);
+INSERT INTO `historys` (`id`, `requestID`, `approver`, `lender`, `borrow_status`) VALUES
+(1, 1, 2, 3, '0');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Request`
+-- Table structure for table `request`
 --
 
-CREATE TABLE `Request` (
+CREATE TABLE `request` (
   `id` int(11) NOT NULL,
-  `roomID` int(11) DEFAULT NULL,
+  `room_slot_ID` int(11) DEFAULT NULL,
   `requestBy` int(11) DEFAULT NULL,
-  `borrow_date` date DEFAULT NULL,
-  `return_date` date DEFAULT NULL
+  `request_status` enum('0','1') DEFAULT NULL COMMENT 'Null = pending, 0 = Unapproved, 1 = approved',
+  `request_reason` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `Request`
+-- Dumping data for table `request`
 --
 
-INSERT INTO `Request` (`id`, `roomID`, `requestBy`, `borrow_date`, `return_date`) VALUES
-(1, 1, 1, '2024-10-01', '2024-10-05');
+INSERT INTO `request` (`id`, `room_slot_ID`, `requestBy`, `request_status`, `request_reason`) VALUES
+(1, 1, 1, '0', 'Good room');
 
 -- --------------------------------------------------------
 
@@ -96,25 +91,69 @@ INSERT INTO `Request` (`id`, `roomID`, `requestBy`, `borrow_date`, `return_date`
 CREATE TABLE `Room` (
   `ID` int(11) NOT NULL,
   `building` varchar(10) DEFAULT NULL,
-  `image` varchar(50) DEFAULT NULL,
-  `status` tinyint(4) DEFAULT NULL CHECK (`status` in (0,1))
+  `image` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `Room`
 --
 
-INSERT INTO `Room` (`ID`, `building`, `image`, `status`) VALUES
-(1, 'C1', 'room1.jpg', 1),
-(2, 'C1', 'room2.jpg', 0),
-(3, 'C2', 'room3.jpg', 1),
-(4, 'C1', 'room4.jpg', 1),
-(5, 'C1', 'room5.jpg', 0),
-(6, 'C2', 'room6.jpg', 1),
-(7, 'D1', 'room7.jpg', 0),
-(8, 'D1', 'room8.jpg', 1),
-(9, 'D1', 'room9.jpg', 0),
-(10, 'C2', 'room10.jpg', 1);
+INSERT INTO `Room` (`ID`, `building`, `image`) VALUES
+(1, 'C1', 'room1.jpg'),
+(2, 'C1', 'room2.jpg'),
+(3, 'C1', 'room3.jpg'),
+(4, 'C1', 'room4.jpg'),
+(5, 'C1', 'room5.jpg'),
+(6, 'C2', 'room6.jpg'),
+(7, 'D1', 'room7.jpg'),
+(8, 'D1', 'room8.jpg'),
+(9, 'D1', 'room9.jpg'),
+(10, 'C2', 'room10.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `room_time_slots`
+--
+
+CREATE TABLE `room_time_slots` (
+  `slotID` int(11) NOT NULL,
+  `roomID` int(11) DEFAULT NULL,
+  `time_slot_id` int(11) DEFAULT NULL,
+  `room_time_status` enum('0','1') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `room_time_slots`
+--
+
+INSERT INTO `room_time_slots` (`slotID`, `roomID`, `time_slot_id`, `room_time_status`) VALUES
+(1, 1, 1, '1'),
+(2, 1, 2, '1'),
+(3, 1, 3, '1'),
+(4, 1, 4, '0');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `time_slots`
+--
+
+CREATE TABLE `time_slots` (
+  `time_slot_id` int(11) NOT NULL,
+  `borrow_time` time NOT NULL,
+  `return_time` time NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `time_slots`
+--
+
+INSERT INTO `time_slots` (`time_slot_id`, `borrow_time`, `return_time`) VALUES
+(1, '08:00:00', '10:00:00'),
+(2, '10:00:00', '12:00:00'),
+(3, '13:00:00', '15:00:00'),
+(4, '15:00:00', '17:00:00');
 
 -- --------------------------------------------------------
 
@@ -151,21 +190,20 @@ ALTER TABLE `Building`
   ADD PRIMARY KEY (`ID`);
 
 --
--- Indexes for table `History`
+-- Indexes for table `historys`
 --
-ALTER TABLE `History`
+ALTER TABLE `historys`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `roomID` (`roomID`),
-  ADD KEY `requestBy` (`requestBy`),
-  ADD KEY `approver` (`approver`),
-  ADD KEY `lender` (`lender`);
+  ADD KEY `fk_requestID` (`requestID`),
+  ADD KEY `fk_approver` (`approver`),
+  ADD KEY `fk_lender` (`lender`);
 
 --
--- Indexes for table `Request`
+-- Indexes for table `request`
 --
-ALTER TABLE `Request`
+ALTER TABLE `request`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `roomID` (`roomID`),
+  ADD KEY `room_slot_ID` (`room_slot_ID`),
   ADD KEY `requestBy` (`requestBy`);
 
 --
@@ -174,6 +212,20 @@ ALTER TABLE `Request`
 ALTER TABLE `Room`
   ADD PRIMARY KEY (`ID`),
   ADD KEY `building` (`building`);
+
+--
+-- Indexes for table `room_time_slots`
+--
+ALTER TABLE `room_time_slots`
+  ADD PRIMARY KEY (`slotID`),
+  ADD KEY `roomID` (`roomID`),
+  ADD KEY `time_slot_id` (`time_slot_id`);
+
+--
+-- Indexes for table `time_slots`
+--
+ALTER TABLE `time_slots`
+  ADD PRIMARY KEY (`time_slot_id`);
 
 --
 -- Indexes for table `User`
@@ -187,16 +239,28 @@ ALTER TABLE `User`
 --
 
 --
--- AUTO_INCREMENT for table `History`
+-- AUTO_INCREMENT for table `historys`
 --
-ALTER TABLE `History`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `historys`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `Request`
+-- AUTO_INCREMENT for table `request`
 --
-ALTER TABLE `Request`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+ALTER TABLE `request`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `room_time_slots`
+--
+ALTER TABLE `room_time_slots`
+  MODIFY `slotID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `time_slots`
+--
+ALTER TABLE `time_slots`
+  MODIFY `time_slot_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `User`
@@ -209,19 +273,18 @@ ALTER TABLE `User`
 --
 
 --
--- Constraints for table `History`
+-- Constraints for table `historys`
 --
-ALTER TABLE `History`
-  ADD CONSTRAINT `history_ibfk_1` FOREIGN KEY (`roomID`) REFERENCES `Room` (`ID`),
-  ADD CONSTRAINT `history_ibfk_2` FOREIGN KEY (`requestBy`) REFERENCES `User` (`id`),
-  ADD CONSTRAINT `history_ibfk_3` FOREIGN KEY (`approver`) REFERENCES `User` (`id`),
-  ADD CONSTRAINT `history_ibfk_4` FOREIGN KEY (`lender`) REFERENCES `User` (`id`);
+ALTER TABLE `historys`
+  ADD CONSTRAINT `fk_approver` FOREIGN KEY (`approver`) REFERENCES `User` (`id`),
+  ADD CONSTRAINT `fk_lender` FOREIGN KEY (`lender`) REFERENCES `User` (`id`),
+  ADD CONSTRAINT `fk_requestID` FOREIGN KEY (`requestID`) REFERENCES `request` (`id`);
 
 --
--- Constraints for table `Request`
+-- Constraints for table `request`
 --
-ALTER TABLE `Request`
-  ADD CONSTRAINT `request_ibfk_1` FOREIGN KEY (`roomID`) REFERENCES `Room` (`ID`),
+ALTER TABLE `request`
+  ADD CONSTRAINT `request_ibfk_1` FOREIGN KEY (`room_slot_ID`) REFERENCES `room_time_slots` (`slotID`),
   ADD CONSTRAINT `request_ibfk_2` FOREIGN KEY (`requestBy`) REFERENCES `User` (`id`);
 
 --
@@ -229,6 +292,13 @@ ALTER TABLE `Request`
 --
 ALTER TABLE `Room`
   ADD CONSTRAINT `room_ibfk_1` FOREIGN KEY (`building`) REFERENCES `Building` (`ID`);
+
+--
+-- Constraints for table `room_time_slots`
+--
+ALTER TABLE `room_time_slots`
+  ADD CONSTRAINT `room_time_slots_ibfk_1` FOREIGN KEY (`roomID`) REFERENCES `room` (`ID`),
+  ADD CONSTRAINT `room_time_slots_ibfk_2` FOREIGN KEY (`time_slot_id`) REFERENCES `time_slots` (`time_slot_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

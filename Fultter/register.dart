@@ -109,6 +109,9 @@ class _MyWidgetState extends State<RegisterPage> {
                       ),
                       TextField(
                         controller: _emailController,
+                        style: TextStyle(
+                        fontFamily: 'LilitaOne',
+                      ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           filled: true,
@@ -131,6 +134,9 @@ class _MyWidgetState extends State<RegisterPage> {
                       const SizedBox(height: 20),
                       TextField(
                         controller: _passwordController,
+                        style: TextStyle(
+                        fontFamily: 'LilitaOne',
+                      ),
                         obscureText: true,
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -154,6 +160,9 @@ class _MyWidgetState extends State<RegisterPage> {
                       const SizedBox(height: 20),
                       TextField(
                         controller: _repasswordController,
+                        style: TextStyle(
+                        fontFamily: 'LilitaOne',
+                      ),
                         obscureText: true,
                         decoration: InputDecoration(
                           border: InputBorder.none,

@@ -1,4 +1,3 @@
-// node/index.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require("path");
@@ -27,7 +26,7 @@ app.post('/login', function (req, res) {
     //import value form html
     const email = req.body.email;
     const raw_password = req.body.password;
-    const sql = `SELECT id,role,password, borrowQuota FROM user WHERE email = ?;`;
+    const sql = `SELECT id,role,password, borrowQuota,email FROM user WHERE email = ?;`;
     if (email != "" && raw_password != "") {
     con.query(sql, [email], function (err, results) {
         if (err) {
@@ -110,9 +109,9 @@ app.post("/register", (req, res) => {
     });
 });
 
-// ------------- GET all movies --------------
+// ------------- GET all rooms --------------
 app.get("/rooms", function (_req, res) {
-    const sql = "SELECT * FROM room";
+    const sql = "SELECT rt.slotID, r.id AS roomID, r.building, r.image, ts.borrow_time, ts.return_time, rt.room_time_status FROM room_time_slots rt JOIN room r ON rt.roomID = r.id JOIN time_slots ts ON rt.time_slot_id = ts.time_slot_id;";
     con.query(sql, function (err, results) {
         if (err) {
             console.error(err);
@@ -129,7 +128,7 @@ app.get("/user/request", function (req, res) {
         return res.status(400).send("User ID is required");
     }
     
-    const sql = "SELECT rq.id AS ID , r.building AS Building,r.ID as roomID,r.status,u.email,DATE_FORMAT(rq.borrow_date, '%Y-%m-%d') AS borrow_date, DATE_FORMAT(rq.return_date, '%Y-%m-%d') AS return_date FROM Request rq JOIN Room r ON rq.roomID = r.id JOIN user u ON rq.requestBy = u.id WHERE u.id = ?;";
+    const sql = "SELECT rq.id, r.ID AS roomID, r.building, r.image, rq.request_reason, ts.borrow_time, ts.return_time FROM request rq JOIN room_time_slots rts ON rq.room_slot_ID = rts.slotID JOIN user u ON rq.requestBy = u.id JOIN room r ON rts.roomID = r.id JOIN time_slots ts ON rts.time_slot_id = ts.time_slot_id WHERE u.id = ?;";
     con.query(sql, [userID], function (err, results) {
         if (err) {
             console.error(err);
@@ -147,7 +146,7 @@ app.get("/user/history", function (req, res) {
     if (!userID) {
         return res.status(400).send("User ID is required");
     }
-    const sql = "SELECT h.id AS id, r.building AS building, h.roomID, DATE_FORMAT(h.borrow_date, '%Y-%m-%d') AS borrow_date, DATE_FORMAT(h.return_date, '%Y-%m-%d') AS return_date, h.approveStatus, h.borrowStatus FROM history h JOIN room r ON h.roomID = r.ID WHERE h.requestBy = ?;";
+    const sql = "SELECT htr.id, r.ID AS roomID, r.building, rq.request_reason, ts.borrow_time, ts.return_time, rq.request_status, htr.borrow_status FROM historys htr JOIN request rq ON rq.id = htr.requestId JOIN room_time_slots rts ON rts.slotID = rq.room_slot_ID JOIN time_slots ts ON ts.time_slot_id = rts.time_slot_id JOIN room r ON r.ID = rts.roomID JOIN user u_render ON rq.requestBy = u_render.id WHERE u_render.id = ?;";
     con.query(sql, [userID], function (err, results) {
         if (err) {
             console.error(err);
@@ -159,14 +158,21 @@ app.get("/user/history", function (req, res) {
 
 // ------------- POST user rentRoom --------------
 app.post("/user/rentRoom", function (req, res) {
-    const roomID = req.body.roomID
+    const slotID = req.body.slotID
     const userID = req.body.userID
-    ; 
-    if (!userID) {
+    const reason = req.body.reason
+    
+    if (!userID) {   
         return res.status(400).send("User ID is required");
     }
-    const sql = "INSERT INTO `Request`(`roomID`, `requestBy`, `borrow_date`, `return_date`) VALUES (?,?,?,?)";
-    con.query(sql, [roomID,userID,borrow_date,return_date], function (err, results) {
+    if (!slotID) {   
+        return res.status(400).send("Room ID is required");
+    }
+    if (!reason) {   
+        return res.status(400).send("Reason is required");
+    }
+    const sql = "INSERT INTO `request`(`room_slot_ID`, `requestBy`,`request_reason`) VALUES (?, ?, ?)";
+    con.query(sql, [slotID,userID,reason], function (err, results) {
         if (err) {
             console.error(err);
             return res.status(500).send("Database server error");
